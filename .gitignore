@@ -1,0 +1,8 @@
+venv
+*.pyc
+staticfiles
+*~
+*.swp
+*#
+*.sqlite3
+migrations
