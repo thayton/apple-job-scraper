@@ -6,17 +6,7 @@ from bs4 import BeautifulSoup
 
 class AppleJobsScraper(object):
     def __init__(self):
-        pass
-
-    def scrape(self):
-        jobs = self.scrape_jobs()
-        for job in jobs:
-            print job
-
-    def scrape_jobs(self, max_pages=3):
-        jobs = []
-        pageno = 0
-        search_request = {
+        self.search_request = {
             "searchString":"",
             "jobType":0,
             "sortBy":"req_open_dt",
@@ -25,7 +15,7 @@ class AppleJobsScraper(object):
             "autocomplete":None,
             "delta":0,
             "numberOfResults":0,
-            "pageNumber":pageno,
+            "pageNumber":None,
             "internalExternalIndicator":0,
             "lastRunDate":0,
             "countryLang":None,
@@ -48,9 +38,19 @@ class AppleJobsScraper(object):
             "requisitionIds":None
         }
 
+    def scrape(self):
+        jobs = self.scrape_jobs()
+        for job in jobs:
+            print job
+
+    def scrape_jobs(self, max_pages=3):
+        jobs = []
+        pageno = 0
+        self.search_request['pageNumber'] = pageno
+
         while pageno < max_pages:
             payload = { 
-                'searchRequestJson': json.dumps(search_request),
+                'searchRequestJson': json.dumps(self.search_request),
                 'clientOffset': '-300'
             }
 
@@ -69,13 +69,14 @@ class AppleJobsScraper(object):
             for r in s.findAll('requisition'):
                 job = {}
                 job['jobid'] = r.jobid.text
-                job['title'] = r.postingtitle and r.postingtitle.text or r.retailpostingtitle.text
+                job['title'] = r.postingtitle and \
+                    r.postingtitle.text or r.retailpostingtitle.text
                 job['location'] = r.location.text
                 jobs.append(job)
 
             # Next page
             pageno += 1
-            search_request['pageNumber'] = pageno
+            self.search_request['pageNumber'] = pageno
 
         return jobs
 
